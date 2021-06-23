@@ -51,8 +51,8 @@ make debug
 ```
 
 ### Useful resources 
-[Offical Buck website](https://buck.build)
-[Slack workspace](https://buckbuild.slack.com)
-[iOS Tooling at Uber](https://vimeo.com/208053716)
-[Building iOS Apps without Xcode - iOS Conf SG 2019](https://www.youtube.com/watch?v=JRsWi8KC2Sw)
-[Basics: Building with Buck](https://www.youtube.com/watch?v=sZdDFfNJeuU)
+1. [Offical Buck website](https://buck.build)
+1. [Slack workspace](https://buckbuild.slack.com)
+1. [iOS Tooling at Uber](https://vimeo.com/208053716)
+1. [Building iOS Apps without Xcode - iOS Conf SG 2019](https://www.youtube.com/watch?v=JRsWi8KC2Sw)
+1. [Basics: Building with Buck](https://www.youtube.com/watch?v=sZdDFfNJeuU)
