@@ -23,22 +23,10 @@ ui_tests = [
 # This is a list of all of our first-party libraries that are depended upon (directly or transitively) by this application.
 # Every first-party library has an associated test target. We use this list to determine what test targets to run in CI.
 first_party_library_dependencies = [
-    "//Libraries/ASwiftModule:ASwiftModule",
-    "//Libraries/Cpp1:Cpp1",
-    "//Libraries/Objc1:Objc1",
-    "//Libraries/ObjcAndSwift:ObjcAndSwift",
-    "//Libraries/SecondSwiftModule:SecondSwiftModule",
-    "//Libraries/SwiftAndObjc:SwiftAndObjc",
-    "//Libraries/SwiftReliesOnCXX:SwiftReliesOnCXX",
-    "//Libraries/SwiftWithAssets:SwiftWithAssets",
-    "//Libraries/SwiftWithMLModel:SwiftWithMLModel",
-    "//Libraries/SwiftWithPrecompiledDependency:SwiftWithPrecompiledDependency",
-    "//Libraries/YetAnotherSwiftModule:YetAnotherSwiftModule",
+    "//Libraries/ASwiftModule:ASwiftModule"
 ]
 
 prebuilt_frameworks = [
-    "//PrebuiltFrameworks:AFNetworking",
-
     # Hack to enable project generation to work for the Carthage BUCK file which otherwise only has `prebuilt_apple_framework`s.
     "//PrebuiltFrameworks:PrebuiltFrameworksProjectGeneratorHack",
 ]
@@ -71,8 +59,7 @@ apple_library(
     tests = app_tests,
     deps = [
         # "//Pods:Braintree",
-        "//Pods:CryptoSwift",
-        "//Pods:PromiseKit",
+        # "//Pods:PromiseKit",
 
         ":ExampleAppAssets",
 
@@ -158,9 +145,6 @@ buck_local_bundle(
     info_plist_substitutions = info_plist_substitutions("ExampleApp"),
     native_xcode_deps=prebuilt_frameworks + [
         # For "#watch", https://buckbuild.com/rule/apple_bundle.html#deps
-        ":ExampleWatchApp#watch",
-        ":ExampleMessageExtension",
-        ":ExampleWidgetExtension",
     ]
     + prebuilt_frameworks
     + prebuilt_dynamic_frameworks,
@@ -180,169 +164,6 @@ apple_package(
 # on the watch target `SDKROOT = watchos;` is not in the same `pbxproj` as the target that defines the main app
 # binary, the Copy Files phase to embed the watch app and extension will search the `iphoneos` directory,
 # and fail the build on generated Xcode projects.
-
-# This is the code that runs on the iPhone and talks to the app running on the Watch.
-apple_binary(
-    name = "ExampleWatchAppExtensionBinary",
-    srcs = glob([
-        "WatchExtension/**/*.swift",
-    ]),
-    # Without specifying the target, buck will provide a wrong one,
-    # which will cause compiler error.
-    swift_compiler_flags = ["-target", "i386-apple-watchos4.0-simulator"],
-    configs = watch_binary_configs("ExampleApp.WatchApp.Extension"),
-    linker_flags = ["-e", "_WKExtensionMain"],
-    frameworks = [
-        "$SDKROOT/System/Library/Frameworks/CoreGraphics.framework",
-        "$SDKROOT/System/Library/Frameworks/Foundation.framework",
-        "$SDKROOT/System/Library/Frameworks/UIKit.framework",
-        "$SDKROOT/System/Library/Frameworks/WatchConnectivity.framework",
-        "$SDKROOT/System/Library/Frameworks/WatchKit.framework",
-    ],
-    headers = glob([
-        "WatchExtension/**/*.h",
-    ]),
-)
-
-apple_bundle(
-    name = "ExampleWatchAppExtension",
-    binary = ":ExampleWatchAppExtensionBinary",
-    extension = "appex",
-    info_plist = "WatchExtension/Info.plist",
-    info_plist_substitutions = {
-        "DEVELOPMENT_LANGUAGE": DEVELOPMENT_LANGUAGE,
-        "EXECUTABLE_NAME": "ExampleWatchAppExtension",
-        "PRODUCT_BUNDLE_IDENTIFIER": bundle_identifier("ExampleApp.WatchApp.Extension"),
-        "WK_APP_BUNDLE_IDENTIFIER": bundle_identifier("ExampleApp.WatchApp"),
-        "PRODUCT_NAME": "ExampleWatchAppExtension",
-        "PRODUCT_MODULE_NAME": "ExampleWatchAppExtensionBinary",
-    },
-    xcode_product_type = "com.apple.product-type.watchkit2-extension",
-)
-
-# This is the code that runs on the Watch.
-apple_binary(
-    name = "ExampleWatchAppBinary",
-    configs = watch_binary_configs("ExampleApp.WatchApp")
-)
-
-apple_bundle(
-    name = "ExampleWatchApp",
-    binary = ":ExampleWatchAppBinary",
-    visibility = [
-        "//App:",
-    ],
-    extension = "app",
-    info_plist = "WatchApplication/Info.plist",
-    info_plist_substitutions = {
-        "DEVELOPMENT_LANGUAGE": DEVELOPMENT_LANGUAGE,
-        "EXECUTABLE_NAME": "ExampleWatchApp",
-        "PRODUCT_BUNDLE_IDENTIFIER": bundle_identifier("ExampleApp.WatchApp"),
-        "WK_COMPANION_APP_BUNDLE_IDENTIFIER": bundle_identifier("ExampleApp"),
-        "PRODUCT_NAME": "ExampleWatchApp",
-    },
-    xcode_product_type = "com.apple.product-type.application.watchapp2",
-    deps = [
-        ":ExampleWatchAppExtension",
-        ":ExampleWatchAppResources",
-    ],
-)
-
-apple_resource(
-    name = "ExampleWatchAppResources",
-    dirs = [],
-    files = glob(["WatchApplication/**/*.storyboard"])
-)
-### Watch App End ###
-
-### iMessage Extension Begin ###
-# It is possible for an iMessage extension to be declared in a separate BUCK file.
-# Declaring the iMessage extension in a separate `BUCK` file would result in that code living in a
-# separate `pbxproj` file in the Buck-generate Xcode projects. Due to our learnings from the watch
-# app (described above) we think it's safer to keep the iMessage extension in the same `BUCK` file
-# that declares the main app bundle.
-
-apple_binary(
-    name = "ExampleMessageExtensionBinary",
-    srcs = glob([
-        "MessageExtension/**/*.swift",
-    ]),
-    configs = message_binary_configs("ExampleApp.MessageExtension"),
-
-    # "-e _NSExtensionMain" tell linker this binary is app extension, so it won't fail due to missing _main
-    # "-Xlinker -rpath -Xlinker @executable_path/../../Frameworks" tells the executable binary to
-    # look for frameworks in ExampleApp.app/Frameworks instead of PlugIns, so that we don't need to have
-    # the libSwift*.dylib in ExampleApp.app/PlugIns/*.appex/Frameworks
-    linker_flags = [
-        "-e",
-        "_NSExtensionMain",
-        "-Xlinker",
-        "-rpath",
-        "-Xlinker",
-        "@executable_path/../../Frameworks",
-    ],
-)
-
-apple_bundle(
-    name = "ExampleMessageExtension",
-    binary = ":ExampleMessageExtensionBinary",
-    extension = "appex",
-    info_plist = "MessageExtension/Info.plist",
-    info_plist_substitutions = {
-        "DEVELOPMENT_LANGUAGE": DEVELOPMENT_LANGUAGE,
-        "EXECUTABLE_NAME": "ExampleMessageExtension",
-        "PRODUCT_BUNDLE_IDENTIFIER": bundle_identifier("ExampleApp.MessageExtension"),
-        "PRODUCT_NAME": "ExampleMessageExtension",
-        "PRODUCT_MODULE_NAME": "ExampleMessageExtensionBinary",
-    },
-    deps = [
-        ":ExampleMessageExtensionResources",
-    ],
-    xcode_product_type = "com.apple.product-type.app-extension.messages",
-)
-
-apple_resource(
-    name = "ExampleMessageExtensionResources",
-    dirs = [],
-    files = glob(["MessageExtension/**/*.storyboard"])
-)
-### iMessage Extension End ###
-
-### Widget Extension Begin ###
-apple_binary(
-    name = "ExampleWidgetExtensionBinary",
-    srcs = glob([
-        "WidgetExtension/**/*.swift",
-    ]),
-    configs = message_binary_configs("ExampleApp.WidgetExtension"),
-
-    # Same linker flags as ExampleMessageExtensionBinary
-    linker_flags = [
-        "-e",
-        "_NSExtensionMain",
-        "-Xlinker",
-        "-rpath",
-        "-Xlinker",
-        "@executable_path/../../Frameworks",
-    ],
-)
-
-apple_bundle(
-    name = "ExampleWidgetExtension",
-    binary = ":ExampleWidgetExtensionBinary",
-    extension = "appex",
-    info_plist = "WidgetExtension/Info.plist",
-    info_plist_substitutions = {
-        "DEVELOPMENT_LANGUAGE": DEVELOPMENT_LANGUAGE,
-        "EXECUTABLE_NAME": "ExampleWidgetExtension",
-        "PRODUCT_BUNDLE_IDENTIFIER": bundle_identifier("ExampleApp.WidgetExtension"),
-        "PRODUCT_NAME": "ExampleWidgetExtension",
-        "PRODUCT_MODULE_NAME": "ExampleWidgetExtensionBinary",
-        "PRODUCT_BUNDLE_PACKAGE_TYPE": "XPC!",
-    },
-    xcode_product_type = "com.apple.product-type.app-extension",
-)
-### Widget Extension End ###
 
 ### Tests Begin ###
 

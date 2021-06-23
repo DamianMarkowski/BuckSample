@@ -1,7 +1,6 @@
 # BuckSample
-This repo shows how Airbnb builds its iOS applications using Buck. It is where we prototype new functionality with Buck before making changes to our internal repo. We hope you find it as useful as we do :smiley:
 
-[![CircleCI](https://circleci.com/gh/airbnb/BuckSample/tree/master.svg?style=svg)](https://circleci.com/gh/airbnb/BuckSample/tree/master)
+This is a simplified and slightly updated version of the Airbnb's BuckSample project available here: [https://github.com/airbnb/BuckSample](https://github.com/airbnb/BuckSample). 
 
 ### To Install
 
@@ -13,9 +12,8 @@ make install_buck
 Note: you may need to [install Java 8](https://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html) before `buck` will run for you locally.
 
 ### Running Tests
-Press `Cmd + U` to run the unit tests for the `ExampleApp` target inside Xcode.
 
-Or, from the terminal you can run `make test`.
+In order to run the unit tests, execute the following command in a terminal: `make test`.
 
 <img src="https://github.com/airbnb/BuckSample/raw/master/Docs/CommandLineTests.png" width=500 />
 
@@ -52,10 +50,9 @@ make project
 make debug
 ```
 
-### References
-1. https://github.com/airbnb/BuckSample/blob/master/Pods/BUCK gives a few examples on how we build CocoaPods with Buck
-1. https://github.com/airbnb/BuckSample/blob/master/App/BUCK is the main build file which shows how we setup resources/assets and build the final binary/ipa file.
-1. https://www.youtube.com/watch?v=8OF7L3SdY5U "Fast reliable Swift builds with Buck" - Robbert van Ginkel
-1. https://www.youtube.com/watch?v=uvNI_E0ZgZU "Ludicrously Fast Builds with Buck" - Simon Stewart
-
-Buck Build channel https://buckbuild.slack.com.
+### Useful resources 
+[Offical Buck website](https://buck.build)
+[Slack workspace](https://buckbuild.slack.com)
+[iOS Tooling at Uber](https://vimeo.com/208053716)
+[Building iOS Apps without Xcode - iOS Conf SG 2019](https://www.youtube.com/watch?v=JRsWi8KC2Sw)
+[Basics: Building with Buck](https://www.youtube.com/watch?v=sZdDFfNJeuU)
